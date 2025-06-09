@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
@@ -227,7 +226,7 @@ const AppContent: React.FC = () => {
   const advanceHeroSlide = useCallback(() => {
     if (heroScrollContainerRef.current && MOCK_HERO_IMAGES.length > 0) {
       const currentItem = MOCK_HERO_IMAGES[currentHeroSlide];
-      const videoElement = currentItem.type === 'video' ? heroVideoRefs.current[currentHeroSlide] : null;
+      const videoElement = currentItem && currentItem.type === 'video' ? heroVideoRefs.current[currentHeroSlide] : null;
 
       if (videoElement && !videoElement.paused) {
         return;
@@ -257,8 +256,8 @@ const AppContent: React.FC = () => {
       if (heroIntervalRef.current) clearInterval(heroIntervalRef.current);
   
       const currentItem = MOCK_HERO_IMAGES[currentHeroSlide];
-      if (currentItem.type === 'image' || !currentItem.videoUrl) {
-        heroIntervalRef.current = setInterval(advanceHeroSlide, currentItem.duration || 10000);
+      if (!currentItem || currentItem.type === 'image' || !currentItem.videoUrl) {
+        heroIntervalRef.current = setInterval(advanceHeroSlide, currentItem?.duration || 10000);
       } else {
         const videoElement = heroVideoRefs.current[currentHeroSlide];
         if (videoElement && videoElement.paused) { 
@@ -284,7 +283,7 @@ const AppContent: React.FC = () => {
         const videoElement = heroVideoRefs.current[index];
         if (videoElement && !videoElement.ended) {
             if (heroIntervalRef.current) clearInterval(heroIntervalRef.current);
-             heroIntervalRef.current = setInterval(advanceHeroSlide, MOCK_HERO_IMAGES[index].duration || 10000);
+             heroIntervalRef.current = setInterval(advanceHeroSlide, MOCK_HERO_IMAGES[index]?.duration || 10000);
         }
     }
   };
@@ -493,31 +492,34 @@ const AppContent: React.FC = () => {
             className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full"
             onScroll={handleManualHeroScroll}
           >
-            {MOCK_HERO_IMAGES.map((item, index) => (
-              <div key={index} className="w-full flex-shrink-0 snap-center h-full bg-black">
-                {item.type === 'image' || !item.videoUrl ? (
-                  <img 
-                    src={item.url} 
-                    alt={item.altText || `Hero image ${index + 1}`} 
-                    className="w-full h-full object-cover" 
-                    loading={index === 0 ? "eager" : "lazy"}
-                  />
-                ) : (
-                  <video
-                    ref={(el: HTMLVideoElement | null) => { heroVideoRefs.current[index] = el; }}
-                    src={item.videoUrl}
-                    className="w-full h-full object-cover"
-                    muted 
-                    autoPlay={index === currentHeroSlide} 
-                    loop={false} 
-                    playsInline
-                    onPlay={() => handleVideoEvents(index, 'play')}
-                    onEnded={() => handleVideoEvents(index, 'ended')}
-                    onPause={() => handleVideoEvents(index, 'pause')}
-                  />
-                )}
-              </div>
-            ))}
+            {MOCK_HERO_IMAGES.map((item, index) => {
+              if (!item) return null;
+              return (
+                <div key={index} className="w-full flex-shrink-0 snap-center h-full bg-black">
+                  {item.type === 'image' || !item.videoUrl ? (
+                    <img 
+                      src={item.url} 
+                      alt={item.altText || `Hero image ${index + 1}`} 
+                      className="w-full h-full object-cover" 
+                      loading={index === 0 ? "eager" : "lazy"}
+                    />
+                  ) : (
+                    <video
+                      ref={(el: HTMLVideoElement | null) => { heroVideoRefs.current[index] = el; }}
+                      src={item.videoUrl}
+                      className="w-full h-full object-cover"
+                      muted 
+                      autoPlay={index === currentHeroSlide} 
+                      loop={false} 
+                      playsInline
+                      onPlay={() => handleVideoEvents(index, 'play')}
+                      onEnded={() => handleVideoEvents(index, 'ended')}
+                      onPause={() => handleVideoEvents(index, 'pause')}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
         

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import PageHeader from '../components/PageHeader';
 import { BottomNavBar } from '../components/BottomNavBar';
